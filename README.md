@@ -3,12 +3,6 @@
 A Rust port of the [Interception library](https://github.com/oblitum/Interception) for intercepting keyboard and mouse
 input on Windows systems.
 
-## Overview
-
-Interception provides a low-level interface for intercepting and modifying keyboard and mouse input at the driver level
-on Windows. This Rust implementation maintains full compatibility with the original C library while providing modern
-safety guarantees.
-
 ## Features
 
 - **Low-level input interception** - Intercept keyboard and mouse events at the driver level
@@ -16,29 +10,6 @@ safety guarantees.
 - **No C library dependency** - Communicates directly with the driver via `DeviceIoControl`, unlike [interception-rs](https://github.com/bozbez/interception-rs) which binds to the C library
 - **Safe Rust API** - Memory-safe wrapper around Windows APIs
 - **Driver installer included** - Self-contained installer for required Windows drivers
-
-## Components
-
-### Main Library
-
-The core library provides functions for:
-
-- Setting up device contexts and filters
-- Receiving keyboard and mouse events
-- Sending modified events back to the system
-- Managing device priorities and filters
-
-### Driver Installer
-
-A comprehensive installer utility that handles driver installation and setup automatically:
-
-```bash
-# Install Interception drivers
-interception-installer install
-
-# Remove Interception drivers  
-interception-installer uninstall
-```
 
 ## Requirements
 
@@ -48,15 +19,19 @@ interception-installer uninstall
 
 ## Installation
 
-1. Download the latest release
+1. Download the latest `interception-installer` binary from the [releases page](../../releases)
 2. Run the installer with administrator privileges:
    ```bash
    interception-installer install
    ```
 3. Reboot your system
-4. You can now use applications that depend on Interception
 
-## Usage Example
+To uninstall the drivers:
+```bash
+interception-installer uninstall
+```
+
+## Usage
 
 ```rust
 use interception::{Device, FILTER_KEY_ALL, Interception, KeyStroke};
@@ -64,7 +39,6 @@ use interception::{Device, FILTER_KEY_ALL, Interception, KeyStroke};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut interception = Interception::new()?;
 
-    // Enable keyboard interception on all keyboard devices
     for device in interception.devices_mut() {
         if let Device::Keyboard(keyboard) = device {
             keyboard.set_filter(FILTER_KEY_ALL)?;
@@ -79,15 +53,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if let Device::Keyboard(keyboard) = device {
             let received = keyboard.receive(&mut strokes)?;
-
             // ... process strokes here ...
-
-            // Forward strokes so they reach the application
             keyboard.send(received)?;
         }
     }
 }
 ```
+
+For more examples, see the [`examples/`](examples/) directory:
+- [`escape_blocker.rs`](examples/escape_blocker.rs) — block the Escape key
+- [`keylogger.rs`](examples/keylogger.rs) — log all key events
+- [`mouse_capture.rs`](examples/mouse_capture.rs) — capture mouse input
 
 ## License
 
